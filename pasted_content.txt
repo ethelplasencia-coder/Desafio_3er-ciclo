@@ -1,0 +1,277 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+
+namespace TiendaProductosDama 
+{
+    class Producto // Clase para guardar datos de productos
+    {
+        public int Codigo { get; set; } // Guarda el código del producto
+        public string Nombre { get; set; } = ""; // Guarda nombre del producto
+        public string Categoria { get; set; } = ""; // Guarda categoría
+        public decimal Precio { get; set; } // Guarda precio
+        public int Stock { get; set; } // Guarda cantidad disponible
+    }
+
+    class Venta // Clase para guardar ventas realizadas
+    {
+        public int CodigoProducto { get; set; } // Código del producto vendido
+        public string NombreProducto { get; set; } = ""; // Nombre del producto
+        public int Cantidad { get; set; } // Cantidad vendida
+        public decimal Total { get; set; } // Total pagado
+        public DateTime Fecha { get; set; } // Fecha de venta
+    }
+
+    class Program
+    {
+        // Lista donde se almacenan los productos
+        static List<Producto> productos = new List<Producto>();
+
+        // Lista donde se almacenan las ventas
+        static List<Venta> ventas = new List<Venta>();
+
+        static void Main(string[] args) // Método principal
+        {
+            int opcion; // Variable para guardar opción del menú
+
+            do
+            {
+                Console.Clear(); // Limpia pantalla
+
+                // Título del sistema
+                Console.WriteLine("======================================");
+                Console.WriteLine("   TIENDA BELLA DAMA - CAJAMARCA");
+                Console.WriteLine("======================================");
+
+                // Opciones del menú
+                Console.WriteLine("1. Registrar producto");
+                Console.WriteLine("2. Listar productos");
+                Console.WriteLine("3. Registrar entrada de stock");
+                Console.WriteLine("4. Registrar salida de stock");
+                Console.WriteLine("5. Registrar venta");
+                Console.WriteLine("6. Ver reporte de ventas");
+                Console.WriteLine("7. Salir");
+
+                Console.Write("Seleccione una opción: ");
+
+                // Lee opción ingresada
+                opcion = int.Parse(Console.ReadLine());
+
+                // Evalúa la opción elegida
+                switch (opcion)
+                {
+                    case 1:
+                        RegistrarProducto(); // Llama función registrar producto
+                        break;
+
+                    case 2:
+                        ListarProductos(); // Muestra productos
+                        break;
+
+                    case 3:
+                        EntradaStock(); // Aumenta stock
+                        break;
+
+                    case 4:
+                        SalidaStock(); // Reduce stock
+                        break;
+
+                    case 5:
+                        RegistrarVenta(); // Registra venta
+                        break;
+
+                    case 6:
+                        ReporteVentas(); // Muestra reporte
+                        break;
+
+                    case 7:
+                        Console.WriteLine("Gracias por usar el sistema.");
+                        break;
+
+                    default:
+                        Console.WriteLine("Opción incorrecta.");
+                        break;
+                }
+
+                Console.WriteLine("\nPresione ENTER para continuar...");
+                Console.ReadLine();
+
+            } while (opcion != 7); // Repite hasta elegir salir
+        }
+
+        // Función para registrar productos
+        static void RegistrarProducto()
+        {
+            Producto p = new Producto(); // Crea nuevo producto
+
+            Console.WriteLine("\n--- REGISTRAR PRODUCTO ---");
+
+            Console.Write("Código del producto: ");
+            p.Codigo = int.Parse(Console.ReadLine());
+
+            Console.Write("Nombre del producto: ");
+            p.Nombre = Console.ReadLine();
+
+            Console.Write("Categoría: ");
+            p.Categoria = Console.ReadLine();
+
+            Console.Write("Precio: S/ ");
+            p.Precio = decimal.Parse(Console.ReadLine());
+
+            Console.Write("Stock inicial: ");
+            p.Stock = int.Parse(Console.ReadLine());
+
+            productos.Add(p); // Guarda producto en la lista
+
+            Console.WriteLine("Producto registrado correctamente.");
+        }
+
+        // Función para mostrar productos
+        static void ListarProductos()
+        {
+            Console.WriteLine("\n--- LISTA DE PRODUCTOS ---");
+
+            // Verifica si hay productos
+            if (productos.Count == 0)
+            {
+                Console.WriteLine("No hay productos registrados.");
+                return;
+            }
+
+            // Recorre lista de productos
+            foreach (Producto p in productos)
+            {
+                Console.WriteLine($"Código: {p.Codigo} | Nombre: {p.Nombre} | Stock: {p.Stock}");
+            }
+        }
+
+        // Función para agregar stock
+        static void EntradaStock()
+        {
+            Console.WriteLine("\n--- ENTRADA DE STOCK ---");
+
+            Console.Write("Ingrese código del producto: ");
+            int codigo = int.Parse(Console.ReadLine());
+
+            // Busca producto por código
+            Producto p = productos.FirstOrDefault(x => x.Codigo == codigo);
+
+            // Verifica si existe
+            if (p == null)
+            {
+                Console.WriteLine("Producto no encontrado.");
+                return;
+            }
+
+            Console.Write("Cantidad que ingresa: ");
+            int cantidad = int.Parse(Console.ReadLine());
+
+            p.Stock += cantidad; // Suma stock
+
+            Console.WriteLine("Stock actualizado correctamente.");
+        }
+
+        // Función para disminuir stock
+        static void SalidaStock()
+        {
+            Console.WriteLine("\n--- SALIDA DE STOCK ---");
+
+            Console.Write("Ingrese código del producto: ");
+            int codigo = int.Parse(Console.ReadLine());
+
+            Producto p = productos.FirstOrDefault(x => x.Codigo == codigo);
+
+            if (p == null)
+            {
+                Console.WriteLine("Producto no encontrado.");
+                return;
+            }
+
+            Console.Write("Cantidad que sale: ");
+            int cantidad = int.Parse(Console.ReadLine());
+
+            // Valida que exista suficiente stock
+            if (cantidad > p.Stock)
+            {
+                Console.WriteLine("No hay suficiente stock.");
+                return;
+            }
+
+            p.Stock -= cantidad; // Resta stock
+
+            Console.WriteLine("Salida registrada correctamente.");
+        }
+
+        // Función para registrar ventas
+        static void RegistrarVenta()
+        {
+            Console.WriteLine("\n--- REGISTRAR VENTA ---");
+
+            Console.Write("Ingrese código del producto: ");
+            int codigo = int.Parse(Console.ReadLine());
+
+            Producto p = productos.FirstOrDefault(x => x.Codigo == codigo);
+
+            if (p == null)
+            {
+                Console.WriteLine("Producto no encontrado.");
+                return;
+            }
+
+            Console.Write("Cantidad vendida: ");
+            int cantidad = int.Parse(Console.ReadLine());
+
+            // Verifica stock suficiente
+            if (cantidad > p.Stock)
+            {
+                Console.WriteLine("No hay stock suficiente.");
+                return;
+            }
+
+            // Calcula total de venta
+            decimal total = cantidad * p.Precio;
+
+            p.Stock -= cantidad; // Reduce stock después de vender
+
+            Venta v = new Venta(); // Crea nueva venta
+
+            v.CodigoProducto = p.Codigo;
+            v.NombreProducto = p.Nombre;
+            v.Cantidad = cantidad;
+            v.Total = total;
+            v.Fecha = DateTime.Now; // Guarda fecha actual
+
+            ventas.Add(v); // Guarda venta
+
+            Console.WriteLine($"Venta registrada correctamente. Total: S/ {total}");
+        }
+
+        // Función para mostrar ventas
+        static void ReporteVentas()
+        {
+            Console.WriteLine("\n--- REPORTE DE VENTAS ---");
+
+            if (ventas.Count == 0)
+            {
+                Console.WriteLine("No hay ventas registradas.");
+                return;
+            }
+
+            decimal totalGeneral = 0; // Acumula total vendido
+
+            foreach (Venta v in ventas)
+            {
+                Console.WriteLine($"Producto: {v.NombreProducto} | Total: S/ {v.Total}");
+
+                totalGeneral += v.Total; // Suma ventas
+            }
+
+            Console.WriteLine("--------------------------------------");
+
+            // Muestra total vendido
+            Console.WriteLine($"Total vendido: S/ {totalGeneral}");
+        }
+    }
+}
